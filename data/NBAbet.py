@@ -2,6 +2,7 @@ import sqlite3
 import datetime
 import time
 import csv
+import pandas as pd
 
 conn = sqlite3.connect('nba.db')
 
@@ -17,6 +18,7 @@ teamsWon = {"Boston Celtics":[], "Brooklyn Nets":[],"New York Knicks":[], "Phila
 
 months = {"Jan":1, "Feb":2, "Mar":3, "Apr":4, "May":5, "Jun":6, "Jul":7, "Aug":8, "Sep":9, "Oct":10, "Nov":11, "Dec":12}
 
+
 class teamOff:
     def __init__(self, date, rows):
         self.rows = rows
@@ -25,45 +27,121 @@ class teamOff:
     
     def parse(self, rows, date):
         global teamsOff
+        date = (int(date.year)*int(date.month)+int(date.day))
         offRating = ((rows[23]/(rows[5]-rows[16]+rows[21]+(0.4*rows[14])))*100)
-        print(offRating)
-        teamsOff[rows[1]].append({(date.year, date.month, date.day):offRating})
-        print(teamsOff[rows[1]])
+        teamsOff[rows[1]].append({(date):offRating})
         
-            
-c = conn.cursor()
-for rows in c.execute('SELECT * from standings order by games'):
-    past = datetime.datetime.strptime(rows[0], '%Y-%m-%d')
-    if(past.day<today.day):
-        nba = teamOff(past, rows)
-        
-        print(rows)
-    elif(past.day>today.day and past.month != today.month):
-        nba = teamOff(past, rows)
-        
-        print(rows)
+def func():            
+    c = conn.cursor()
+    for rows in c.execute('SELECT * from standings order by games'):
+        past = datetime.datetime.strptime(rows[0], '%Y-%m-%d')
+        if(past.day<today.day):
+            nba = teamOff(past, rows)
+        elif(past.day>today.day and past.month != today.month):
+            nba = teamOff(past, rows)
 
 def csvParser():
     
     with open('scores.csv', newline = '') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            print("Visitors: {}, Home: {}".format(row['Visitor/Neutral'], row['Home/Neutral']))
-            print(row['Date'][4:])
+            #print("Visitors: {}, Home: {}".format(row['Visitor/Neutral'], row['Home/Neutral']))
             month = row['Date'][4:7]
             d = row['Date'][8:]
             day = d[:d.index(" ")]
             year = d[d.index(" ")+1:]
-            date = str(year)+"-"+str(months[month])+"-"+str(day)
-            date_ = datetime.datetime.strptime(date, '%Y-%m-%d')
-            #if today<date:
-                
-            print("{} won".format(row['Visitor/Neutral']) if (row['VPTS']>row['HPTS']) else "{} won".format(row['Home/Neutral']))
-            
+            date_ = str((year))+"-"+str((months[month]))+"-"+str(((day)))
+            date_ = datetime.datetime.strptime(date_, '%Y-%m-%d')
+            date = ((int(date_.year)*int(date_.month)+int(date_.day)))
+            teamsWon[row['Visitor/Neutral']].append({date:1 if (row['VPTS']>row['HPTS']) else 0})
+            teamsWon[row['Home/Neutral']].append({date:0 if (row['VPTS']>row['HPTS'])else 1})
             
             
         
-csvParser()
+
+#print(teamsWon['Boston Celtics'])
+
+
+def visHome():
+    global teamsOff
+    homes = []
+    away = []
+    homeWin = []
+    awayWin = []
+    with open('scores.csv', newline = '') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            month = row['Date'][4:7]
+            d = row['Date'][8:]
+            day = d[:d.index(" ")]
+            year = d[d.index(" ")+1:]
+            date_ = str((year))+"-"+str((months[month]))+"-"+str(((day)))
+            date_ = datetime.datetime.strptime(date_, '%Y-%m-%d')
+            date = ((int(date_.year)*int(date_.month)+int(date_.day)))
+            #print(row['Home/Neutral'])
+            #print(row['Visitor/Neutral'])
+            home = teamsOff[row['Home/Neutral']]
+            visit = teamsOff[row['Visitor/Neutral']]
+            homeWL = teamsWon[row['Home/Neutral']]
+            visitWL = teamsWon[row['Visitor/Neutral']]
+            
+            for ind in homeWL:
+                for i in ind:
+                    homeWin.append(ind[i])
+            
+            for ind in visitWL:
+                for i in ind:
+                    awayWin.append(ind[i])
+            
+            #print(visit)
+            for indList in home:
+                for key in indList:
+                    if key == (date+1):
+                        homes.append(indList[date+1])
+            for indList in visit:
+                for key in indList:
+                    if key == (date+1):
+                        away.append(indList[date+1])
+            for games in teamsWon:
+                for won in teamsWon[games]:
+                    for key in won:
+                        if(key == date+1):
+                            if(won[key] == 0):
+                                awayWin.append(1)
+                                homeWin.append(0)
+                            else:
+                                homeWin.append(1)
+                                awayWin.append(0)
+        for i in homeWin:
+            print(i)
+            #with open('scores.txt', 'w') as textfile:
+            #    textfile.write((home))
+
+    #print((homes))
+    #print(away)
+    #print(len(awayWin))
+    #writeToCSV(homes, away)
+        
+def writeToCSV(home, away):
+    df = pd.DataFrame(away)
+    df.to_csv('allScore.csv', index = False)
+        
+        
+csvParser()        
+func()
+print(teamsWon)
+i = 0
+#for games in teamsWon:
+#    for won in teamsWon[games]:
+#        for key in won:
+#            print(won[key])
+#        i+=1
+#    print()
+#print(i)
+visHome()
+#fuckIt()
+
+
 
 class Scores():
     
