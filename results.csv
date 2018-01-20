@@ -1,0 +1,8 @@
+Month,Day,Year,Start (ET),Visitor,Home,Outcome,Confidence
+Jan,20,2018,7:00 pm,Miami Heat,Charlotte Hornets,home,0.9999967813491821
+Jan,20,2018,7:00 pm,Memphis Grizzlies,New Orleans Pelicans,home,1.0
+Jan,20,2018,7:30 pm,Milwaukee Bucks,Philadelphia 76ers,home,0.9999376535415649
+Jan,20,2018,8:30 pm,Golden State Warriors,Houston Rockets,home,0.9999957084655762
+Jan,20,2018,9:00 pm,Toronto Raptors,Minnesota Timberwolves,home,0.9999985694885254
+Jan,20,2018,9:00 pm,Los Angeles Clippers,Utah Jazz,home,0.9999587535858154
+Jan,20,2018,10:00 pm,Dallas Mavericks,Portland Trail Blazers,home,0.9999921321868896
