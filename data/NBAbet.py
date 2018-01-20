@@ -50,11 +50,11 @@ def csvParser():
         for row in reader:
             print("Visitors: {}, Home: {}".format(row['Visitor/Neutral'], row['Home/Neutral']))
             print(row['Date'][4:])
-            month = months[row['Date'][4:7]]
-            day = row['Date'].trim()
-            year = row['Date'][11:]
-            print(month, day, year)
-            date = str(year)+"-"+str(month)+"-"+str(day)
+            month = row['Date'][4:7]
+            d = row['Date'][8:]
+            day = d[:d.index(" ")]
+            year = d[d.index(" ")+1:]
+            date = str(year)+"-"+str(months[month])+"-"+str(day)
             date_ = datetime.datetime.strptime(date, '%Y-%m-%d')
             #if today<date:
                 
